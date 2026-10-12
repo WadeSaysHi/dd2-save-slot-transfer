@@ -38,15 +38,11 @@ This project requires source and destination Pawn IDs and server slot IDs to be 
 
 ## 3. Prepare your destination and a frozen backup
 
-
-
 1. Create slot 2 with its own Arisen and main pawn. If needed, connect in-game and rest at an inn or owned home so its Pawn ID and server slot identity are populated. A blank, unregistered pawn is rejected.
 2. Record the destination names and Pawn ID privately. Never post your saves or these identifiers in comments or bug reports.
-3. Exit DD2. In Steam, open the game's Properties and prevent Steam Cloud from syncing during the operation. Check any other backup/sync software that watches the save folder.
+3. After destination registration, turn Network Features off in DD2 under System > Options > Network, then exit the game. Separately pause Steam Cloud in the game's Steam Properties. Cloud sync and the game's pawn-network features are different systems. Check any other backup/sync software that watches the save folder.
 4. Find the active save directory. A typical location is Steam/userdata/<account-folder>/2054970/remote/win64_save. Your Steam installation may be on another drive.
 5. Copy the entire win64_save folder to a new, separate snapshot directory. Keep an additional untouched backup. Do not play or let any client write to the live saves while generating and installing candidates.
-
-
 
 The --account-id value is the numeric Steam userdata folder for the active account. A SteamID64 also works in this observed format through its low 32 bits. It is not your login name or password.
 
@@ -56,7 +52,7 @@ All paths and account numbers in this guide are examples. Replace them with your
 
 The implementation and detailed format checks are available in [dd2-save-slot-transfer on GitHub](https://github.com/WadeSaysHi/dd2-save-slot-transfer). I maintain this free MIT-licensed project. It does not request a Steam password or send save data to a server.
 
-On GitHub, use Code > Download ZIP and extract it, or clone the repository. Install Python 3.11 or later from its official source. Open PowerShell in the extracted project directory.
+On GitHub, use Code > Download ZIP and extract it, or clone the repository. Install Python 3.11 or later from its official source. Open PowerShell in the extracted project directory. Run py -3 --version and confirm it reports Python 3.11 or later. Stop if any command reports an error; do not continue to installation after a failed generation.
 
 The examples use the virtual environment directly, so activating a PowerShell environment is unnecessary. Forward slashes in these quoted Windows paths are intentional:
 
@@ -75,16 +71,13 @@ $cli = "dd2_save_slot_transfer.cli"
   --output $output --account-id $accountId
 ```
 
-
 123456789 is synthetic: replace it with your account folder number. Set $work to your own work directory and place the complete frozen win64_save contents directly inside snapshots/run-01. Choose a new output directory each time.
 
 Generation does not install anything. Review these local reports:
 
-
 - comparison.json: source, previous destination, proposed destination, names, identities, levels, and raw experience fields.
 - validation.json: hashes and validation results for the four candidate files.
 - snapshot-manifest.json: hashes of the original snapshot, used to reject stale installations.
-
 
 These reports contain private save information. Do not upload them. If validation fails, stop and investigate the account, registration, game version, and file layout. Do not disable checks to force a transfer.
 
@@ -104,7 +97,6 @@ $backup = 'D:/DD2-Backups/transfer-run-01'
   -CandidateDirectory $candidate -BackupDirectory $backup -WhatIf
 ```
 
-
 Replace every path and the synthetic account number. The backup directory must not already exist. Remove -WhatIf only after checking the target paths and reports, keeping DD2 closed and sync paused. If PowerShell blocks the script, stop and review your system's policy; this guide does not require disabling security protections.
 
 The four files are data005Slot.bin, data006Slot.bin, data009Slot.bin, and data00-1.bin. Do not copy comparison.json or the manifests into the live save folder.
@@ -113,7 +105,7 @@ The published helper has been reviewed and syntax-checked; its exact generic for
 
 ## 6. Verify, recover, and repeat
 
-**Offline check first:** prevent network uploading and load slot 2. Check the retained names, transferred appearances, location, quest progress, equipment, inventory, and levels. Check that slot 1 still loads with its original state.
+**Offline check first:** confirm DD2 Network Features remains off before loading slot 2; pausing Steam Cloud alone does not disable pawn uploading. The setting is under System > Options > Network, as described in the [Capcom Steam FAQ](https://www.capcom-support.com/hc/en-us/articles/13470419567260-Dragon-s-Dogma-2-Frequently-Asked-Questions-Steam). Check the retained names, transferred appearances, location, quest progress, equipment, inventory, and levels. Check that slot 1 still loads with its original state.
 
 If anything is wrong, exit the game and Steam, preserve the failed state separately, and restore the complete matching backup folder. Keep sync paused until you have loaded and checked the restored state. A local restore cannot guarantee rollback of data already uploaded to the game server.
 
@@ -133,23 +125,17 @@ This section uses only Windows File Explorer, Steam, and the game. It can back u
 
 **Make a backup**
 
-
 1. Exit DD2 and pause Steam Cloud for the game. Exit Steam before copying.
 2. Open the active account's Steam/userdata/<account-folder>/2054970/remote directory in File Explorer.
 3. Copy the entire win64_save folder to a separate folder with a unique date/run label. Do not move the original or combine files from different backups.
 4. Keep a note of which playthrough and slots the backup contains. Store this note and backup privately.
 
-
-
 **Restore a backup**
-
 
 1. With DD2 and Steam closed and sync still paused, copy the current entire win64_save folder somewhere else so the current state is recoverable.
 2. Move the current win64_save folder out of the remote directory, then copy the chosen complete backup into remote under the exact name win64_save. This avoids mixing old and new files.
 3. Start Steam with sync paused and network uploading prevented, then load the game and verify the expected slots and progress.
 4. Keep both backups. Restore your saved previous folder if the result is wrong. Resolve any Cloud conflict deliberately before resuming sync.
-
-
 
 Restoring the complete folder restores all contained slots to that snapshot; it is not a selective slot-2 replacement. Do not rename data000.bin to a slot-2 filename: internal identity, file-detail records, and shared system metadata would not be repaired.
 
