@@ -28,6 +28,14 @@ The output is serialized, encrypted, decrypted again, and checked against the ex
 
 _Level, _Exp, and _IncreaseParams travel with the full character state. The tool does not assume that changing _Exp alone safely resets a character.
 
+### Why a raw duplicate can collide with the original pawn
+
+Copying a source save byte-for-byte into another slot also copies its embedded ServerPawnId and server-associated identifiers. Changing the filename or display name does not itself create a separately registered pawn. If both saves retain that identity, treating them as two independent online pawns risks competing updates or confusing upload/search results. Those server outcomes are a risk inference from the shared identity, not a reproduced result established here.
+
+[A community file-renaming tutorial](https://www.reddit.com/r/DragonsDogma/comments/1w9bs6n/tutorial_merging_your_old_dd2_multisaves_into_the/) describes moving previously separate playthroughs; that differs from cloning one playthrough into multiple slots. [A direct discussion of cloning a save to hire its pawn](https://www.reddit.com/r/DragonsDogma2/comments/1x3gw8t/is_it_possible_to_duplicate_save_slot_1_main_to/) also questions whether duplication creates distinct Pawn IDs. These discussions are community evidence, not a controlled server test. They do not establish inevitable corruption or a specific ban duration.
+
+This project requires source and destination Pawn IDs and server slot IDs to be distinct, then retains the already registered destination network module. It refuses colliding input identities; it does not repair an already duplicated identity or guarantee server acceptance. Keep names, file details, and shared system metadata consistent too.
+
 ## 3. Prepare your destination and a frozen backup
 
 
