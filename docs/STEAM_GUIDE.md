@@ -146,4 +146,3 @@ This section uses only Windows File Explorer, Steam, and the game. It can back u
 Restoring the complete folder restores all contained slots to that snapshot; it is not a selective slot-2 replacement. Do not rename data000.bin to a slot-2 filename: internal identity, file-detail records, and shared system metadata would not be repaired.
 
 The selective transfer described earlier requires parsing, editing, and re-encrypting the protected save structure. No equivalent Windows-only file-copy procedure has been verified. This manual alternative is useful for recovery, and does not change the rules that apply to save modification.
-
