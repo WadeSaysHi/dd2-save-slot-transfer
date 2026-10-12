@@ -73,6 +73,21 @@ def describe(tree):
     return {
         "player": text(c.field(personal(tree), "Name")),
         "pawn": text(c.field(getctx(ms, "app.PawnDataContext"), "_Name")),
+        "name_languages": {
+            "player": int.from_bytes(
+                c.field(personal(tree), "LanguageOnEdit")["v"]["raw"], "little", signed=True
+            ),
+            "pawn": int.from_bytes(
+                c.field(getctx(ms, "app.PawnDataContext"), "_LanguageOnEdit")["v"]["raw"],
+                "little",
+                signed=True,
+            ),
+            "pawn_owner": int.from_bytes(
+                c.field(getctx(ms, "app.PawnOwnerContext"), "_LanguageOnEdit")["v"]["raw"],
+                "little",
+                signed=True,
+            ),
+        },
         "player_status": status(ps),
         "pawn_status": status(ms),
         "identifiers": {
@@ -82,13 +97,14 @@ def describe(tree):
     }
 
 
-def transfer(snapshot, output, account_id):
+def transfer(snapshot, output, account_id, *, name_language=None):
     """Preserve destination identity and names while replacing its game progress.
 
     All three destination recovery points use the latest source autosave.
     The output directory must be new. Identity values in the generated local
     reports are private and should not be published.
     """
+    require(name_language in (None, "english"), "Unsupported name language override")
     srcdir, out = (Path(snapshot).resolve(), Path(output).resolve())
     require(not out.is_relative_to(srcdir), "Output must be outside the snapshot directory")
     require(not out.exists(), "Output exists; choose a new directory")
@@ -149,30 +165,39 @@ def transfer(snapshot, output, account_id):
     module(new)[15] = copy.deepcopy(tm[15])
     pn = personal(new)
     pt = personal(target)
-    for k in ["Name", "NickName"]:
+    for k in ["Name", "NickName", "LanguageOnEdit"]:
         c.field(pn, k)["v"] = copy.deepcopy(c.field(pt, k)["v"])
     ms = char_contexts(new, "app.MainPawnDataContext")
     mt = char_contexts(target, "app.MainPawnDataContext")
     pawn = getctx(ms, "app.PawnDataContext")
     tpawn = getctx(mt, "app.PawnDataContext")
-    for k in ["_Name", "_Nickname"]:
+    for k in ["_Name", "_Nickname", "_LanguageOnEdit"]:
         c.field(pawn, k)["v"] = copy.deepcopy(c.field(tpawn, k)["v"])
     # Update the main pawn's owner display cache together with the Arisen name.
     owner = getctx(ms, "app.PawnOwnerContext")
     c.field(owner, "_Name")["v"] = copy.deepcopy(c.field(pt, "Name")["v"])
     c.field(owner, "_NickName")["v"] = copy.deepcopy(c.field(pt, "NickName")["v"])
+    # The language of a custom name travels with that name, not with appearance.
+    # An explicit repair may be needed when a previous transfer already changed it.
+    language = copy.deepcopy(c.field(pt, "LanguageOnEdit")["v"])
+    if name_language == "english":
+        require(language["size"] == 4, "Unexpected name language field size")
+        language["raw"] = (1).to_bytes(4, "little", signed=True)
+        c.field(pn, "LanguageOnEdit")["v"] = copy.deepcopy(language)
+        c.field(pawn, "_LanguageOnEdit")["v"] = copy.deepcopy(language)
+    c.field(owner, "_LanguageOnEdit")["v"] = copy.deepcopy(language)
     # Undo only allowed exceptions; the entire remaining tree must equal the source.
     proof = copy.deepcopy(new)
     module(proof)[15] = copy.deepcopy(sm[15])
     pp = personal(proof)
     ps = personal(source)
-    for k in ["Name", "NickName"]:
+    for k in ["Name", "NickName", "LanguageOnEdit"]:
         c.field(pp, k)["v"] = copy.deepcopy(c.field(ps, k)["v"])
     mp = char_contexts(proof, "app.MainPawnDataContext")
     sp = char_contexts(source, "app.MainPawnDataContext")
     for cls, fields in [
-        ("app.PawnDataContext", ["_Name", "_Nickname"]),
-        ("app.PawnOwnerContext", ["_Name", "_NickName"]),
+        ("app.PawnDataContext", ["_Name", "_Nickname", "_LanguageOnEdit"]),
+        ("app.PawnOwnerContext", ["_Name", "_NickName", "_LanguageOnEdit"]),
     ]:
         for k in fields:
             c.field(getctx(mp, cls), k)["v"] = copy.deepcopy(c.field(getctx(sp, cls), k)["v"])
@@ -228,8 +253,8 @@ def transfer(snapshot, output, account_id):
         meta[di] = fresh
         preview = copy.deepcopy(previews[si])
         p = next(n for n in c.walk(preview) if n["h"] == c.H("app.PlayerPersonalDataContext"))
-        for k in ["Name", "NickName"]:
-            c.field(p, k)["v"] = copy.deepcopy(c.field(pt, k)["v"])
+        for k in ["Name", "NickName", "LanguageOnEdit"]:
+            c.field(p, k)["v"] = copy.deepcopy(c.field(pn, k)["v"])
         previews[di] = preview
     outputs["data00-1.bin"] = sysnew
     info_before = next(n for n in c.walk(system[0]["c"]) if n["h"] == SYSTEM_SLOT_CLASS)
@@ -286,10 +311,12 @@ def transfer(snapshot, output, account_id):
                 "source": a,
                 "destination_before": b,
                 "destination_after": describe(new),
+                "name_language_override": name_language,
                 "checks": [
                     "semantic roundtrip",
                     "source gameplay data equality except named exceptions",
                     "destination network module preserved exactly",
+                    "name language preserved or explicitly repaired",
                     "first-slot system previews unchanged",
                     "encryption authentication",
                     "block and file checksums",

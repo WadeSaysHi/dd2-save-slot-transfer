@@ -57,6 +57,17 @@ Names and monikers have separate fields:
 
 The owner display fields are made consistent with the retained destination Arisen fields. Appearance is copied from the source; preserving a name does not preserve the destination's appearance.
 
+
+### Name language and moniker fallback
+
+Custom names have language markers as well as monikers. The transfer preserves the destination Arisen `LanguageOnEdit` and main pawn `_LanguageOnEdit`; the pawn-owner `_LanguageOnEdit` cache is made consistent with the Arisen. Destination system previews use the resulting Arisen marker. Appearance and progress continue to come from the source.
+
+Earlier versions copied names and monikers but accidentally retained the source language markers. This could change which name the game displays across languages. Preserving the destination marker prevents that regression, but does not fix an already incorrect marker automatically.
+
+For an intentional English-name repair, add `--name-language english` to the transfer command, or use `transfer(snapshot, output, account_id, name_language="english")`. This sets only the three name-language markers and the destination Arisen preview markers to the observed English value `1`. It does not change the game UI language, name strings, monikers, or network module. Default transfers have no override. Generated local reports include `name_languages` and the requested override for review.
+
+[Capcom's Steam FAQ](https://www.capcom-support.com/hc/en-us/articles/13470419567260-Dragon-s-Dogma-2-Frequently-Asked-Questions-Steam) describes moniker fallback for support pawns from a different language and when offline. That official explanation is not a complete specification of main-pawn display behavior. The locally observed Simplified Chinese marker is `13`; the English value `1` is consistent with the [RE Engine mod author's language mapping](https://github.com/Daniel7400/MHWS-Achievement-Progress-Tracker/wiki/Language), which is from another game. The repair passed full file and tree checks; its in-game English display and server behavior still need separate verification. Other-language players may continue to see the moniker normally. Do not replace a preset moniker with an arbitrary custom name to bypass that behavior.
+
 ## Experience fields: what is known
 
 `app.HumanStatusContext` contains `_Level`, `_Exp`, and `_IncreaseParams`. Job ranks, skills, equipment, and other gameplay state are held in additional contexts or modules.

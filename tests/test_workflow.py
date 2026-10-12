@@ -8,7 +8,14 @@ from pathlib import Path
 
 from dd2_save_slot_transfer.crypto import decrypt, encrypt
 from dd2_save_slot_transfer.errors import ValidationError
-from dd2_save_slot_transfer.transfer import describe, read_tree, transfer
+from dd2_save_slot_transfer.transfer import (
+    char_contexts,
+    describe,
+    getctx,
+    personal,
+    read_tree,
+    transfer,
+)
 from dd2_save_slot_transfer.tree import Codec, H, field
 
 ACCOUNT = 123456789  # Synthetic test account, unrelated to any real snapshot.
@@ -36,7 +43,12 @@ def object_array(values):
 
 def player(name):
     return node(
-        "app.PlayerPersonalDataContext", [string("Name", name), string("NickName", "Alias")]
+        "app.PlayerPersonalDataContext",
+        [
+            string("Name", name),
+            string("NickName", "Alias"),
+            member("LanguageOnEdit", 7, scalar(13 if name == "Source" else 1)),
+        ],
     )
 
 
@@ -80,11 +92,19 @@ def game(slot, file_slot):
                         node("app.MainPawnDataContext"),
                         node(
                             "app.PawnDataContext",
-                            [string("_Name", pawn_name), string("_Nickname", "PawnAlias")],
+                            [
+                                string("_Name", pawn_name),
+                                string("_Nickname", "PawnAlias"),
+                                member("_LanguageOnEdit", 7, scalar(13 if slot == 1 else 1)),
+                            ],
                         ),
                         node(
                             "app.PawnOwnerContext",
-                            [string("_Name", name), string("_NickName", "Alias")],
+                            [
+                                string("_Name", name),
+                                string("_NickName", "Alias"),
+                                member("_LanguageOnEdit", 7, scalar(13 if slot == 1 else 1)),
+                            ],
                         ),
                         status(),
                     ]
@@ -231,8 +251,56 @@ class WorkflowTests(unittest.TestCase):
                 {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in snapshot.iterdir()},
             )
             self.assertEqual(len(json.loads((output / "validation.json").read_text())), 4)
+            for filename in ["data005Slot.bin", "data006Slot.bin", "data009Slot.bin"]:
+                tree = read_tree(output / filename, ACCOUNT)
+                self.assertEqual(field(personal(tree), "LanguageOnEdit")["v"], scalar(1))
+                contexts = char_contexts(tree, "app.MainPawnDataContext")
+                for cls in ["app.PawnDataContext", "app.PawnOwnerContext"]:
+                    self.assertEqual(
+                        field(getctx(contexts, cls), "_LanguageOnEdit")["v"], scalar(1)
+                    )
+            system_tree = read_tree(output / "data00-1.bin", ACCOUNT)
+            from dd2_save_slot_transfer.tree import walk
+
+            info = next(n for n in walk(system_tree[0]["c"]) if n["h"] == 0x0488EA02)
+            previews = next(f["v"]["vals"] for f in info["fields"] if f["h"] == 0x559B544E)
+            for i in [5, 6, 9]:
+                person = next(
+                    n for n in walk(previews[i]) if n["h"] == H("app.PlayerPersonalDataContext")
+                )
+                self.assertEqual(field(person, "LanguageOnEdit")["v"], scalar(1))
             with self.assertRaises(ValidationError):
                 transfer(snapshot, output, ACCOUNT)
+
+    def test_explicit_english_repair_changes_language_not_identity_or_moniker(self):
+        with tempfile.TemporaryDirectory() as temp:
+            snapshot = Path(temp) / "snapshot"
+            snapshot.mkdir()
+            write_snapshot(snapshot)
+            for filename in ["data005Slot.bin", "data006Slot.bin", "data009Slot.bin"]:
+                tree = read_tree(snapshot / filename, ACCOUNT)
+                field(personal(tree), "LanguageOnEdit")["v"] = scalar(13)
+                contexts = char_contexts(tree, "app.MainPawnDataContext")
+                for cls in ["app.PawnDataContext", "app.PawnOwnerContext"]:
+                    field(getctx(contexts, cls), "_LanguageOnEdit")["v"] = scalar(13)
+                (snapshot / filename).write_bytes(encrypt(Codec().write(tree), ACCOUNT))
+            result = transfer(snapshot, Path(temp) / "output", ACCOUNT, name_language="english")
+            self.assertEqual(
+                result["destination_after"]["identifiers"],
+                result["destination_before"]["identifiers"],
+            )
+            for filename in ["data005Slot.bin", "data006Slot.bin", "data009Slot.bin"]:
+                tree = read_tree(Path(temp) / "output" / filename, ACCOUNT)
+                self.assertEqual(field(personal(tree), "LanguageOnEdit")["v"], scalar(1))
+                contexts = char_contexts(tree, "app.MainPawnDataContext")
+                for cls in ["app.PawnDataContext", "app.PawnOwnerContext"]:
+                    self.assertEqual(
+                        field(getctx(contexts, cls), "_LanguageOnEdit")["v"], scalar(1)
+                    )
+                self.assertEqual(
+                    field(getctx(contexts, "app.PawnDataContext"), "_Nickname")["v"],
+                    "PawnAlias".encode("utf-16le"),
+                )
 
     def test_unregistered_destination_never_creates_output(self):
         with tempfile.TemporaryDirectory() as temp:

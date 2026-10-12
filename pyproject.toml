@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dd2-save-slot-transfer"
-version = "0.2.0"
+version = "0.2.1"
 description = "Offline DD2 save inspection and identity-preserving slot transfer"
 readme = "README.md"
 requires-python = ">=3.11"

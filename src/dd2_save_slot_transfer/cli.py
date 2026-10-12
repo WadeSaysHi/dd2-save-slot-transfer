@@ -24,12 +24,19 @@ def main():
     generate.add_argument("--snapshot", type=Path, required=True)
     generate.add_argument("--output", type=Path, required=True)
     generate.add_argument("--account-id", type=int, required=True)
+    generate.add_argument(
+        "--name-language",
+        choices=["english"],
+        help="Explicitly repair name-language markers; default preserves destination markers",
+    )
     args = parser.parse_args()
     try:
         if args.command == "inspect":
             result = describe(read_tree(args.file, args.account_id))
         else:
-            result = transfer(args.snapshot, args.output, args.account_id)
+            result = transfer(
+                args.snapshot, args.output, args.account_id, name_language=args.name_language
+            )
         print(json.dumps(result, indent=2))
     except (ValidationError, OSError, KeyError, StopIteration, RecursionError) as exc:
         print(f"Validation failed: {exc}", file=sys.stderr)

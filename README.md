@@ -95,3 +95,7 @@ Tests use **synthetic** trees and accounts. No real saves, private identifiers, 
 ## License
 
 The Python tooling, documentation, and scripts authored for this project are available under [MIT](LICENSE). This is an unofficial research tool, not affiliated with or endorsed by Capcom or Valve. No upstream editor source, game files, or upstream type dictionary is redistributed.
+
+### Name language preservation
+
+Transfers preserve destination name-language markers alongside names and monikers. Earlier versions omitted these markers. If a destination already displays its moniker in the intended English UI, an explicit `--name-language english` repair is available; read the [name-language notes](docs/RESEARCH.md#name-language-and-moniker-fallback) before using it. Local reports now include the markers. This repair has file-level validation; in-game and server behavior remain separately verified.
