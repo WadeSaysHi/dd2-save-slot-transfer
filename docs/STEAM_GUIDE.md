@@ -1,4 +1,4 @@
-# Transfer Slot 1 Progress to Slot 2 While Keeping Its Pawn Identity (PC)
+# Copy Slot 1 Progress to Slot 2 While Preserving Slot 2’s Pawn ID (PC)
 
 ## 1. What this transfer does
 
