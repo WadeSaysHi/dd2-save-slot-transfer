@@ -1,4 +1,4 @@
-"""Generate an offline slot-1 to slot-2 refresh; never modify live saves."""
+"""Generate an offline slot-1 to slot-2 transfer; never modify live saves."""
 
 import copy
 import hashlib
@@ -82,7 +82,7 @@ def describe(tree):
     }
 
 
-def refresh(snapshot, output, account_id):
+def transfer(snapshot, output, account_id):
     """Preserve destination identity and names while replacing its game progress.
 
     All three destination recovery points use the latest source autosave.

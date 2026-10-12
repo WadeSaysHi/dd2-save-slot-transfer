@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from .errors import ValidationError
-from .refresh import describe, read_tree, refresh
+from .transfer import describe, read_tree, transfer
 
 
 def main():
@@ -20,7 +20,7 @@ def main():
         required=True,
         help="Steam userdata folder number or SteamID64; low 32 bits are used",
     )
-    generate = sub.add_parser("refresh", help="Generate candidate slot-2 files without installing")
+    generate = sub.add_parser("transfer", help="Generate candidate slot-2 files without installing")
     generate.add_argument("--snapshot", type=Path, required=True)
     generate.add_argument("--output", type=Path, required=True)
     generate.add_argument("--account-id", type=int, required=True)
@@ -29,7 +29,7 @@ def main():
         if args.command == "inspect":
             result = describe(read_tree(args.file, args.account_id))
         else:
-            result = refresh(args.snapshot, args.output, args.account_id)
+            result = transfer(args.snapshot, args.output, args.account_id)
         print(json.dumps(result, indent=2))
     except (ValidationError, OSError, KeyError, StopIteration, RecursionError) as exc:
         print(f"Validation failed: {exc}", file=sys.stderr)

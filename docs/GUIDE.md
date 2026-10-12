@@ -1,12 +1,12 @@
-# DD2 Save Refresh: Research, Experience Fields, and Validation
+# DD2 Save Slot Transfer: Research, Experience Fields, and Validation
 
-This is the consolidated English guide. The executable implementation lives in `src/dd2_slot_refresh`; the repository README provides setup and CLI examples. Real saves and private identifiers are not distributed.
+This guide explains the transfer method and validation checks. The executable implementation lives in `src/dd2_save_slot_transfer`; the repository README provides setup and CLI examples. Real saves and private identifiers are not distributed.
 
 ## Reusable Python interface
 
 ```python
 from pathlib import Path
-from dd2_slot_refresh.refresh import describe, read_tree, refresh
+from dd2_save_slot_transfer.transfer import describe, read_tree, transfer
 
 account_id = 123456789  # Synthetic example: use your Steam userdata folder number.
 snapshot = Path("snapshots/run-01")
@@ -17,19 +17,19 @@ print(source_summary["player_status"])  # Contains level and the raw experience 
 
 # Generate four candidate files; this does not install or upload anything.
 # The output directory must not already exist or be inside the snapshot directory.
-result = refresh(snapshot, Path("outputs/run-01"), account_id)
+result = transfer(snapshot, Path("outputs/run-01"), account_id)
 assert result["destination_after"]["player_status"] == result["source"]["player_status"]
 ```
 
 The assertions above are a usage example only. Internal format and preservation checks use explicit `ValidationError` checks, so they remain active under `python -O`.
 
-## Research notes: identity-preserving save refresh
+## Identity-preserving save transfer
 
 ## Purpose and evidence
 
 The working objective was to copy newer gameplay state from an established first slot to a separately registered second slot. The second slot's independently created names and server identity needed to survive the copy.
 
-The first migration was generated, decrypted again, installed, and then confirmed by the user to load and work online. A subsequent progress refresh was installed with matching hashes and semantic checks. The public implementation was also tested against local private snapshots; those files and reports are not part of the public project. These observations establish a working method for the observed PC format and account, not a guarantee across versions or all server rules.
+The first migration was generated, decrypted again, installed, and then confirmed by the user to load and work online. A subsequent progress transfer was installed with matching hashes and semantic checks. The public implementation was also tested against local private snapshots; those files and reports are not part of the public project. These observations establish a working method for the observed PC format and account, not a guarantee across versions or all server rules.
 
 ## Why copying filenames is insufficient
 
@@ -78,13 +78,13 @@ The owner display fields are made consistent with the retained destination Arise
 
 `app.HumanStatusContext` contains `_Level`, `_Exp`, and `_IncreaseParams`. Job ranks, skills, equipment, and other gameplay state are held in additional contexts or modules.
 
-The tested refresh transferred, for example, a level-99 Arisen and level-98 main pawn. The associated raw `_Exp` values were preserved exactly from the source. Their actual values are not required as public fixtures.
+The tested transfer transferred, for example, a level-99 Arisen and level-98 main pawn. The associated raw `_Exp` values were preserved exactly from the source. Their actual values are not required as public fixtures.
 
 Confirmed:
 
 1. The selected player and main pawn records can be located by context type.
 2. `_Level` and `_Exp` can be extracted without changing the save.
-3. The complete source character state, including experience and attribute growth, survives refresh and serialization.
+3. The complete source character state, including experience and attribute growth, survives transfer and serialization.
 4. Output `_Level` and `_Exp` equal the source values.
 
 Not confirmed:
@@ -225,8 +225,8 @@ The optional PowerShell wrapper supports `-WhatIf`. Its generic published form i
 | Evidence | Scope |
 |---|---|
 | Original migration and name correction | User reported successful in-game behavior and online validation |
-| Later progress refresh | File parsing, complete semantic checks, encryption/checksums, and installed hashes passed |
-| Public Python implementation | Generated candidates from private snapshots; output hashes matched the previously installed validated refresh |
+| Later progress transfer | File parsing, complete semantic checks, encryption/checksums, and installed hashes passed |
+| Public Python implementation | Generated candidates from private snapshots; output hashes matched the previously installed validated transfer |
 | Public automated tests | Synthetic encryption/tree round trips, corruption and wrong-account rejection, identity/name preservation, slot-detail preservation, rejection of unregistered pawns, and record-order independence |
 | Published generic PowerShell installer | Reviewed from the exercised manual installation sequence and syntax-checked by Windows PowerShell; not run against live saves during publication |
 
@@ -240,4 +240,4 @@ Private test data is deliberately absent from the repository. Synthetic tests le
 - Cross-platform, cross-account, modded, or arbitrary slot migration.
 - Compatibility with files whose structure happens to pass some checks but differs in unrecognized semantics.
 
-Do not equate a matching checksum with gameplay or server validity. Complete an offline load check and a separate online test after each installed refresh.
+Do not equate a matching checksum with gameplay or server validity. Complete an offline load check and a separate online test after each installed transfer.

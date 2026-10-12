@@ -3,16 +3,16 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dd2-slot-refresh"
-version = "0.1.0"
-description = "Offline DD2 save inspection and identity-preserving slot refresh"
+name = "dd2-save-slot-transfer"
+version = "0.2.0"
+description = "Offline DD2 save inspection and identity-preserving slot transfer"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 dependencies = ["cryptography>=43,<51", "cityhash>=0.4.7,<1", "mmh3>=5,<6"]
 
 [project.scripts]
-dd2-slot-refresh = "dd2_slot_refresh.cli:main"
+dd2-save-slot-transfer = "dd2_save_slot_transfer.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

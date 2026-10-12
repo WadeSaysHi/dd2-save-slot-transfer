@@ -1,10 +1,10 @@
-# Research notes: identity-preserving save refresh
+# Identity-preserving save transfer
 
 ## Purpose and evidence
 
 The working objective was to copy newer gameplay state from an established first slot to a separately registered second slot. The second slot's independently created names and server identity needed to survive the copy.
 
-The first migration was generated, decrypted again, installed, and then confirmed by the user to load and work online. A subsequent progress refresh was installed with matching hashes and semantic checks. The public implementation was also tested against local private snapshots; those files and reports are not part of the public project. These observations establish a working method for the observed PC format and account, not a guarantee across versions or all server rules.
+The first migration was generated, decrypted again, installed, and then confirmed by the user to load and work online. A subsequent progress transfer was installed with matching hashes and semantic checks. The public implementation was also tested against local private snapshots; those files and reports are not part of the public project. These observations establish a working method for the observed PC format and account, not a guarantee across versions or all server rules.
 
 ## Why copying filenames is insufficient
 
@@ -53,13 +53,13 @@ The owner display fields are made consistent with the retained destination Arise
 
 `app.HumanStatusContext` contains `_Level`, `_Exp`, and `_IncreaseParams`. Job ranks, skills, equipment, and other gameplay state are held in additional contexts or modules.
 
-The tested refresh transferred, for example, a level-99 Arisen and level-98 main pawn. The associated raw `_Exp` values were preserved exactly from the source. Their actual values are not required as public fixtures.
+The tested transfer transferred, for example, a level-99 Arisen and level-98 main pawn. The associated raw `_Exp` values were preserved exactly from the source. Their actual values are not required as public fixtures.
 
 Confirmed:
 
 1. The selected player and main pawn records can be located by context type.
 2. `_Level` and `_Exp` can be extracted without changing the save.
-3. The complete source character state, including experience and attribute growth, survives refresh and serialization.
+3. The complete source character state, including experience and attribute growth, survives transfer and serialization.
 4. Output `_Level` and `_Exp` equal the source values.
 
 Not confirmed:

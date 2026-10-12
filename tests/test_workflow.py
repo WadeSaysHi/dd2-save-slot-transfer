@@ -6,10 +6,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from dd2_slot_refresh.crypto import decrypt, encrypt
-from dd2_slot_refresh.errors import ValidationError
-from dd2_slot_refresh.refresh import describe, read_tree, refresh
-from dd2_slot_refresh.tree import Codec, H, field
+from dd2_save_slot_transfer.crypto import decrypt, encrypt
+from dd2_save_slot_transfer.errors import ValidationError
+from dd2_save_slot_transfer.transfer import describe, read_tree, transfer
+from dd2_save_slot_transfer.tree import Codec, H, field
 
 ACCOUNT = 123456789  # Synthetic test account, unrelated to any real snapshot.
 
@@ -199,7 +199,7 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             decrypt(bytes(damaged), ACCOUNT)
 
-    def test_full_refresh_preserves_identity_names_progress_and_slot_numbers(self):
+    def test_full_transfer_preserves_identity_names_progress_and_slot_numbers(self):
         with tempfile.TemporaryDirectory() as temp:
             snapshot, output = Path(temp) / "snapshot", Path(temp) / "output"
             snapshot.mkdir()
@@ -207,7 +207,7 @@ class WorkflowTests(unittest.TestCase):
             before = {
                 p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in snapshot.iterdir()
             }
-            result = refresh(snapshot, output, ACCOUNT)
+            result = transfer(snapshot, output, ACCOUNT)
             self.assertEqual(result["destination_after"]["player"], "Dest Ω")
             self.assertEqual(result["destination_after"]["pawn"], "DestPawn")
             self.assertEqual(
@@ -232,7 +232,7 @@ class WorkflowTests(unittest.TestCase):
             )
             self.assertEqual(len(json.loads((output / "validation.json").read_text())), 4)
             with self.assertRaises(ValidationError):
-                refresh(snapshot, output, ACCOUNT)
+                transfer(snapshot, output, ACCOUNT)
 
     def test_unregistered_destination_never_creates_output(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -244,7 +244,7 @@ class WorkflowTests(unittest.TestCase):
             field(modules[15], "ServerPawnId")["v"] = b""
             (snapshot / "data005Slot.bin").write_bytes(encrypt(Codec().write(tree), ACCOUNT))
             with self.assertRaises(ValidationError):
-                refresh(snapshot, output, ACCOUNT)
+                transfer(snapshot, output, ACCOUNT)
             self.assertFalse(output.exists())
 
     def test_context_record_order_is_not_hardcoded(self):

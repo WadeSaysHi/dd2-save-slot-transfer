@@ -1,8 +1,8 @@
-# DD2 Slot Refresh
+# DD2 Save Slot Transfer
 
-An offline Python toolkit and English research notes for refreshing **Dragon's Dogma 2 PC slot 2 from slot 1**, while preserving slot 2's registered network identity and character names.
+An offline Python toolkit for transferring **Dragon's Dogma 2 PC progress from slot 1 to slot 2**, while preserving slot 2's registered network identity and character names.
 
-The procedure was used for an initial migration and a later progress refresh. The original migration was confirmed by the user to load and work online. The later refresh passed file-level checks; that is a separate claim from an in-game or server acceptance test.
+The procedure was used for an initial migration and a later progress transfer. The original migration was confirmed by the user to load and work online. The later transfer passed file-level checks; that is a separate claim from an in-game or server acceptance test.
 
 ## What gets copied and preserved
 
@@ -14,12 +14,14 @@ The procedure was used for an initial migration and a later progress refresh. Th
 | Main pawn name and moniker | Preserve destination fields |
 | Main pawn's owner display name and moniker | Match the destination Arisen |
 | Destination file-detail slot numbers | Preserve each destination file's record |
-| Slot 2 metadata and UI previews | Refresh progress previews, retain destination names and server slot identity |
+| Slot 2 metadata and UI previews | Update progress previews, retain destination names and server slot identity |
 | Slot 1 and unrelated system entries | Leave unchanged |
 
 **All three slot-2 recovery files receive the same current source autosave.** Their old recovery points survive only in your backup. This is not a merge of two playthroughs or an experience-reset tool.
 
 ## Install
+
+Project: [dd2-save-slot-transfer](https://github.com/WadeSaysHi/dd2-save-slot-transfer). Version 0.2 uses the `dd2-save-slot-transfer transfer` command and the `dd2_save_slot_transfer.transfer` Python interface. Reinstall if you used the original package; old command names are no longer documented.
 
 Python 3.11 or later:
 
@@ -45,11 +47,11 @@ The following PowerShell examples use your actual account folder number, not a b
 
 ```powershell
 $accountId = 123456789  # Replace this synthetic example with your own account folder number.
-dd2-slot-refresh inspect .\snapshots\run-01\data000.bin --account-id $accountId
-dd2-slot-refresh refresh --snapshot .\snapshots\run-01 --output .\outputs\run-01 --account-id $accountId
+dd2-save-slot-transfer inspect .\snapshots\run-01\data000.bin --account-id $accountId
+dd2-save-slot-transfer transfer --snapshot .\snapshots\run-01 --output .\outputs\run-01 --account-id $accountId
 ```
 
-`refresh` writes candidates to a **new** directory. It never connects to Steam, a server, or another PC and never installs or alters live saves. Review:
+`transfer` writes candidates to a **new** directory. It never connects to Steam, a server, or another PC and never installs or alters live saves. Review:
 
 - `comparison.json`: source, previous destination, proposed destination, levels, experience fields, and identities.
 - `validation.json`: candidate SHA-256 hashes, sizes, and authenticated block counts.
@@ -62,7 +64,7 @@ The layout supported here is DSSS v2 with input flags `0x10` or `0x18` (output u
 Copy the candidate directory to Windows, then run:
 
 ```powershell
-.\scripts\Install-Refresh.ps1 `
+.\scripts\Install-Transfer.ps1 `
   -SaveDirectory 'D:\Steam\userdata\123456789\2054970\remote\win64_save' `
   -CandidateDirectory 'D:\DD2-Work\candidate' `
   -BackupDirectory 'D:\DD2-Backups\unique-run-name' `
@@ -75,9 +77,10 @@ The generic PowerShell wrapper is based on the previously exercised backup/hash/
 
 First check the destination offline: names, appearances, equipment, location, and levels. Then test online uploading and searching by the retained Pawn ID. Local checks cannot prove server acceptance, and restoring local files cannot guarantee reversal of an uploaded server state.
 
-## Research and validation
+## Guides and validation
 
-- [Consolidated English guide with reusable Python example](docs/GUIDE.md)
+- [Player guide for Steam](docs/STEAM_GUIDE.md)
+- [Transfer guide with reusable Python example](docs/GUIDE.md)
 - [Research notes and experience-field analysis](docs/RESEARCH.md)
 - [Format, serialization, and encryption checks](docs/FORMAT.md)
 - [Validation procedure and evidence boundaries](docs/VALIDATION.md)

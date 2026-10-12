@@ -42,8 +42,8 @@ The optional PowerShell wrapper supports `-WhatIf`. Its generic published form i
 | Evidence | Scope |
 |---|---|
 | Original migration and name correction | User reported successful in-game behavior and online validation |
-| Later progress refresh | File parsing, complete semantic checks, encryption/checksums, and installed hashes passed |
-| Public Python implementation | Generated candidates from private snapshots; output hashes matched the previously installed validated refresh |
+| Later progress transfer | File parsing, complete semantic checks, encryption/checksums, and installed hashes passed |
+| Public Python implementation | Generated candidates from private snapshots; output hashes matched the previously installed validated transfer |
 | Public automated tests | Synthetic encryption/tree round trips, corruption and wrong-account rejection, identity/name preservation, slot-detail preservation, rejection of unregistered pawns, and record-order independence |
 | Published generic PowerShell installer | Reviewed from the exercised manual installation sequence and syntax-checked by Windows PowerShell; not run against live saves during publication |
 
@@ -57,4 +57,4 @@ Private test data is deliberately absent from the repository. Synthetic tests le
 - Cross-platform, cross-account, modded, or arbitrary slot migration.
 - Compatibility with files whose structure happens to pass some checks but differs in unrecognized semantics.
 
-Do not equate a matching checksum with gameplay or server validity. Complete an offline load check and a separate online test after each installed refresh.
+Do not equate a matching checksum with gameplay or server validity. Complete an offline load check and a separate online test after each installed transfer.

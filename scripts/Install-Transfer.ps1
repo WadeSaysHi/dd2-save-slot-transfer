@@ -51,7 +51,7 @@ foreach ($record in $before) {
 foreach ($record in $after) {
     Test-FileHash (Join-Path $CandidateDirectory $record.file) $record.sha256
 }
-if (-not $PSCmdlet.ShouldProcess($SaveDirectory, 'Back up and install slot-2 refresh')) { return }
+if (-not $PSCmdlet.ShouldProcess($SaveDirectory, 'Back up and install slot-2 transfer')) { return }
 New-Item -ItemType Directory -Path $BackupDirectory | Out-Null
 foreach ($record in $before) {
     Copy-Item (Join-Path $SaveDirectory $record.file) (Join-Path $BackupDirectory $record.file)
